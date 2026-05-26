@@ -1,5 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 
+namespace ApiRefactor.Models;
+
 public class Wave
 {
     public Guid Id { get; set; }
