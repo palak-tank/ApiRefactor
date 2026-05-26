@@ -1,50 +1,33 @@
+using System.Reflection;
+using ApiRefactor.Infrastructure.Data;
 using ApiRefactor.Repositories;
+using Dapper;
+
+// Dapper type handlers must be registered before any query executes.
+// SQLite stores GUID and DateTime as TEXT; these handlers bridge the gap.
+SqlMapper.AddTypeHandler(new GuidTypeHandler());
+SqlMapper.AddTypeHandler(new DateTimeTypeHandler());
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddScoped<IWaveRepository, WaveRepository>();
+builder.Services.AddMediatR(cfg =>
+    cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly()));
 
 var app = builder.Build();
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-
-app.UseHttpsRedirection();
-
-app.MapGet("/api/wave", async (IWaveRepository waveRepository) =>
+else
 {
-     var waves = await waveRepository.GetAllAsync();
-     return Results.Ok(waves);
-})
-    .WithName("GetWaves")
-    .WithOpenApi();
+    app.UseHttpsRedirection();
+}
 
-app.MapGet("/api/wave/{id:guid}", 
-    async (Guid id, IWaveRepository waveRepository) => {
-        var wave = await waveRepository.GetByIdAsync(id);
-        return wave is null
-            ? Results.NotFound()
-            : Results.Ok(wave);
-        })
-    .WithName("GetWaveById")
-    .WithOpenApi();
-
-app.MapPost("/api/wave", async (Wave wave, IWaveRepository waveRepository) => { 
-    var waveObj = new Wave
-        {
-            Id = Guid.NewGuid(),
-            Name = wave.Name,
-            WaveDate = wave.WaveDate
-        };
-    await waveRepository.SaveAsync(waveObj);
-     return Results.Created(
-            $"/api/wave/{waveObj.Id}",
-            waveObj); 
-    })
-    .WithName("UpsertWave")
-    .WithOpenApi();
-
+app.MapControllers();
 app.Run();
