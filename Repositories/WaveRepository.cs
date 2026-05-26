@@ -4,7 +4,7 @@ using Microsoft.Data.Sqlite;
 
 namespace ApiRefactor.Repositories;
 
-public class WaveRepository : IWaveRepository
+public sealed class WaveRepository : IWaveRepository
 {
     private readonly string _connectionString;
     private readonly ILogger<WaveRepository> _logger;
@@ -15,23 +15,39 @@ public class WaveRepository : IWaveRepository
         _logger = logger;
     }
 
-    public async Task<IEnumerable<Wave>> GetAllAsync()
+    public async Task<(IEnumerable<Wave> Items, int TotalCount)> GetPagedAsync(
+        int page, int pageSize, CancellationToken ct)
     {
-        _logger.LogDebug("Querying all waves");
+        _logger.LogDebug("Querying waves page {Page} with page size {PageSize}", page, pageSize);
+
+        const string sql = """
+            SELECT COUNT(*) FROM waves;
+            SELECT id, name, wavedate FROM waves ORDER BY wavedate DESC LIMIT @pageSize OFFSET @offset;
+            """;
+
+        var parameters = new { pageSize, offset = (page - 1) * pageSize };
+        var command = new CommandDefinition(sql, parameters, cancellationToken: ct);
 
         using var connection = new SqliteConnection(_connectionString);
-        return await connection.QueryAsync<Wave>(
-            "SELECT id, name, wavedate FROM waves");
+        using var multi = await connection.QueryMultipleAsync(command);
+
+        var totalCount = await multi.ReadSingleAsync<int>();
+        var items = await multi.ReadAsync<Wave>();
+
+        return (items, totalCount);
     }
 
-    public async Task<Wave?> GetByIdAsync(Guid id)
+    public async Task<Wave?> GetByIdAsync(Guid id, CancellationToken ct)
     {
         _logger.LogDebug("Querying wave by {WaveId}", id);
 
-        using var connection = new SqliteConnection(_connectionString);
-        var wave = await connection.QueryFirstOrDefaultAsync<Wave>(
+        var command = new CommandDefinition(
             "SELECT id, name, wavedate FROM waves WHERE id = @id",
-            new { id });
+            new { id },
+            cancellationToken: ct);
+
+        using var connection = new SqliteConnection(_connectionString);
+        var wave = await connection.QueryFirstOrDefaultAsync<Wave>(command);
 
         if (wave is null)
             _logger.LogWarning("Wave {WaveId} not found", id);
@@ -39,14 +55,17 @@ public class WaveRepository : IWaveRepository
         return wave;
     }
 
-    public async Task CreateAsync(Wave wave)
+    public async Task CreateAsync(Wave wave, CancellationToken ct)
     {
         _logger.LogDebug("Inserting new wave {WaveId}", wave.Id);
 
-        using var connection = new SqliteConnection(_connectionString);
-        await connection.ExecuteAsync(
+        var command = new CommandDefinition(
             "INSERT INTO waves (id, name, wavedate) VALUES (@Id, @Name, @WaveDate)",
-            wave);
+            wave,
+            cancellationToken: ct);
+
+        using var connection = new SqliteConnection(_connectionString);
+        await connection.ExecuteAsync(command);
 
         _logger.LogInformation("Created wave {WaveId} with name {WaveName}", wave.Id, wave.Name);
     }
