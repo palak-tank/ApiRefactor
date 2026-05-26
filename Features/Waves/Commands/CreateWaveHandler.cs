@@ -24,7 +24,7 @@ public sealed class CreateWaveHandler : IRequestHandler<CreateWaveCommand, Resul
             WaveDate = request.WaveDate
         };
 
-        await _repository.CreateAsync(wave);
+        await _repository.CreateAsync(wave, cancellationToken);
 
         return Result<WaveResponse>.Success(new WaveResponse(wave.Id, wave.Name, wave.WaveDate));
     }

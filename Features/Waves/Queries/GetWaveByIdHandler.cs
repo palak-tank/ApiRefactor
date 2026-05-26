@@ -17,7 +17,7 @@ public sealed class GetWaveByIdHandler
         GetWaveByIdQuery request,
         CancellationToken cancellationToken)
     {
-        var wave = await _repository.GetByIdAsync(request.Id);
+        var wave = await _repository.GetByIdAsync(request.Id, cancellationToken);
 
         if (wave is null)
             return Result<WaveResponse?>.Failure($"Wave with ID {request.Id} was not found.");
