@@ -17,10 +17,13 @@ public sealed class WaveController : ControllerBase
     public WaveController(IMediator mediator) => _mediator = mediator;
 
     [HttpGet]
-    [ProducesResponseType(typeof(IEnumerable<WaveResponse>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetAll()
+    [ProducesResponseType(typeof(PagedResponse<WaveResponse>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetAll(
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20,
+        CancellationToken cancellationToken = default)
     {
-        var result = await _mediator.Send(new GetAllWavesQuery());
+        var result = await _mediator.Send(new GetAllWavesQuery(page, pageSize), cancellationToken);
 
         if (!result.IsSuccess)
             return StatusCode(StatusCodes.Status500InternalServerError, new { error = result.Error });
