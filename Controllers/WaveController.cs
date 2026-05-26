@@ -21,6 +21,10 @@ public sealed class WaveController : ControllerBase
     public async Task<IActionResult> GetAll()
     {
         var result = await _mediator.Send(new GetAllWavesQuery());
+
+        if (!result.IsSuccess)
+            return StatusCode(StatusCodes.Status500InternalServerError, new { error = result.Error });
+
         return Ok(result.Value);
     }
 
@@ -45,6 +49,9 @@ public sealed class WaveController : ControllerBase
     public async Task<IActionResult> Create([FromBody] CreateWaveRequest request)
     {
         var result = await _mediator.Send(new CreateWaveCommand(request.Name, request.WaveDate));
+
+        if (!result.IsSuccess)
+            return StatusCode(StatusCodes.Status500InternalServerError, new { error = result.Error });
 
         return CreatedAtAction(
             nameof(GetById),
