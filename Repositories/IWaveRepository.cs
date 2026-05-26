@@ -1,6 +1,10 @@
+using ApiRefactor.Models;
+
+namespace ApiRefactor.Repositories;
+
 public interface IWaveRepository
 {
-  public Task<IEnumerable<Wave>> GetAllAsync();
-  public Task<Wave?> GetByIdAsync(Guid id);
-  public Task SaveAsync(Wave wave);
+    Task<IEnumerable<Wave>> GetAllAsync();
+    Task<Wave?> GetByIdAsync(Guid id);
+    Task CreateAsync(Wave wave);
 }
