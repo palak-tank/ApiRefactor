@@ -1,6 +1,96 @@
-bin/
-obj/
+# =============================
+# Build outputs
+# =============================
+[Bb]in/
+[Oo]bj/
+[Oo]ut/
+[Ll]og/
+[Ll]ogs/
+publish/
+
+# =============================
+# .NET / NuGet
+# =============================
+*.nupkg
+*.snupkg
+*.nuget.props
+*.nuget.targets
+project.lock.json
+project.fragment.lock.json
+artifacts/
+packages/
+# NuGet v3+ cache (local)
+.nuget/
+
+# =============================
+# Database & local data
+# =============================
+App_Data/*.db
+App_Data/*.db-shm
+App_Data/*.db-wal
+*.sqlite
+*.sqlite3
+
+# =============================
+# Secrets & environment
+# =============================
+appsettings.Development.json
+appsettings.Local.json
+appsettings.*.local.json
+secrets.json
+.env
+.env.*
+!.env.example
+
+# =============================
+# Visual Studio
+# =============================
 .vs/
 *.user
 *.suo
-appsettings.Development.json
+*.userosscache
+*.sln.docstates
+*.userprefs
+.vscode/launch.json
+
+# =============================
+# JetBrains Rider
+# =============================
+.idea/
+*.sln.iml
+
+# =============================
+# Rider / ReSharper
+# =============================
+_ReSharper*/
+*.[Rr]e[Ss]harper
+*.DotSettings.user
+
+# =============================
+# Test results & coverage
+# =============================
+TestResults/
+[Tt]est[Rr]esult*/
+coverage*/
+*.trx
+*.coverage
+*.coveragexml
+*.opencover.xml
+lcov.info
+
+# =============================
+# Publish & deployment
+# =============================
+**/Properties/PublishProfiles/
+
+# =============================
+# Docker
+# =============================
+# .dockerignore is intentionally committed — do not add it here
+
+# =============================
+# OS artefacts
+# =============================
+.DS_Store
+Thumbs.db
+Desktop.ini
