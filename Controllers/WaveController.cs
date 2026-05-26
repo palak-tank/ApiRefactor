@@ -2,12 +2,14 @@ using ApiRefactor.DTOs;
 using ApiRefactor.Features.Waves.Commands;
 using ApiRefactor.Features.Waves.Queries;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ApiRefactor.Controllers;
 
 [ApiController]
 [Route("api/wave")]
+[Authorize]
 public sealed class WaveController : ControllerBase
 {
     private readonly IMediator _mediator;
@@ -36,8 +38,10 @@ public sealed class WaveController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize(Roles = "writer")]
     [ProducesResponseType(typeof(WaveResponse), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> Create([FromBody] CreateWaveRequest request)
     {
         var result = await _mediator.Send(new CreateWaveCommand(request.Name, request.WaveDate));
